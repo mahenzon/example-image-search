@@ -12,6 +12,9 @@ known_langs: tuple[str, ...] = (
 )
 
 
+MAX_PRICE = 2000
+
+
 def handle_intro(
     name: str = "",
 ) -> tuple[str, dict[str, Any] | None]:
@@ -40,16 +43,29 @@ with gr.Blocks(
     )
 
     with gr.Row():
-        with gr.Column(2):
-            intro_input = gr.Textbox(
-                label="Introduce yourself",
+        with gr.Column(1):
+            search_input = gr.Textbox(
+                label="Search for a product",
                 value="",
             )
-            btn = gr.Button(
-                "Greet",
-                variant="primary",
+            price_min_slider = gr.Slider(
+                label="Price from ($)",
+                minimum=0,
+                maximum=MAX_PRICE,
+                value=0,
+                step=10,
+                interactive=True,
             )
-        with gr.Column(1):
+            price_max_slider = gr.Slider(
+                label="Price to ($)",
+                minimum=0,
+                maximum=MAX_PRICE,
+                value=MAX_PRICE,
+                step=10,
+                interactive=True,
+            )
+
+        with gr.Column(3):
             greeting_output = gr.Textbox(
                 label="Greeting",
                 value="",
@@ -60,11 +76,11 @@ with gr.Blocks(
                 interactive=False,
             )
 
-    btn.click(
-        fn=handle_intro,
-        inputs=[intro_input],
-        outputs=[greeting_output, cbg],
-    )
+    # btn.click(
+    #     fn=handle_intro,
+    #     inputs=[intro_input],
+    #     outputs=[greeting_output, cbg],
+    # )
 
 
 def main():
