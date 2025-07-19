@@ -1,8 +1,9 @@
+from dataclasses import asdict
 from enum import StrEnum, auto
 from typing import Any
 
 import gradio as gr
-
+import products
 
 known_langs: tuple[str, ...] = (
     "JS",
@@ -16,7 +17,10 @@ known_langs: tuple[str, ...] = (
 MAX_PRICE = 2000
 
 
-class SortBy(StrEnum):
+SortBy = list(asdict(products.PRODUCTS[0]))
+
+
+class SortOrder(StrEnum):
     Ascending = auto()
     Descending = auto()
 
@@ -75,9 +79,15 @@ with gr.Blocks(
 
             gr.Markdown("### 🔃 Sort Results")
             sort_by_input = gr.Radio(
-                choices=list(SortBy),
-                value=SortBy.Ascending,
+                choices=SortBy,
+                value=SortBy[0],
                 label="Sort by",
+                interactive=True,
+            )
+            sort_order_input = gr.Radio(
+                choices=list(SortOrder),
+                value=SortOrder.Ascending,
+                label="Sort order",
                 interactive=True,
             )
 
