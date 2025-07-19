@@ -10,7 +10,7 @@ class Product:
     rating: int
 
 
-PRODUCTS = [
+PRODUCTS = (
     Product(
         name="iPhone 14",
         price=999,
@@ -270,7 +270,7 @@ PRODUCTS = [
         category="Desktop, Electronics",
         rating=4,
     ),
-]
+)
 
 BRANDS = frozenset(product.brand for product in PRODUCTS)
 CATEGORIES = frozenset(
