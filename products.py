@@ -271,3 +271,8 @@ PRODUCTS = [
         rating=4,
     ),
 ]
+
+BRANDS = frozenset(product.brand for product in PRODUCTS)
+CATEGORIES = frozenset(
+    cat.strip() for product in PRODUCTS for cat in product.category.split(",")
+)

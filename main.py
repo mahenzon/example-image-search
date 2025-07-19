@@ -60,6 +60,16 @@ with gr.Blocks(
                 label="Search for a product",
                 value="",
             )
+
+            brands_cbg = gr.CheckboxGroup(
+                choices=products.BRANDS,
+                label="Brands",
+            )
+            categories_cbg = gr.CheckboxGroup(
+                choices=products.CATEGORIES,
+                label="Categories",
+            )
+
             price_min_slider = gr.Slider(
                 label="Price from ($)",
                 minimum=0,
