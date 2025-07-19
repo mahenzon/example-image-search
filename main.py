@@ -1,6 +1,5 @@
-from dataclasses import asdict, astuple
+from dataclasses import asdict, astuple, dataclass
 from enum import StrEnum, auto
-from operator import attrgetter
 from typing import Any
 
 import gradio as gr
@@ -27,6 +26,17 @@ class SortOrder(StrEnum):
     Descending = auto()
 
 
+@dataclass
+class SortValueGetter:
+    attr_name: str
+
+    def get_value(self, item: Any) -> Any:
+        value = getattr(item, self.attr_name)
+        if isinstance(value, str):
+            value = value.lower()
+        return value
+
+
 def search_for_products(
     search_text: str,
     brands_names: list[str],
@@ -38,7 +48,7 @@ def search_for_products(
 ):
     result_products = list(products.PRODUCTS)
     result_products.sort(
-        key=attrgetter(sort_by),
+        key=SortValueGetter(sort_by).get_value,
         reverse=sort_order == SortOrder.Descending,
     )
     result_data = [astuple(product) for product in result_products]
@@ -132,20 +142,28 @@ with gr.Blocks(
                 col_count=(len(ColNames), "fixed"),
             )
 
+    inputs = [
+        search_input,
+        brands_cbg,
+        categories_cbg,
+        price_min_slider,
+        price_max_slider,
+        sort_by_input,
+        sort_order_input,
+    ]
+    outputs = [
+        results_data_frame,
+    ]
+    for component in inputs:
+        component.change(
+            search_for_products,
+            inputs=inputs,
+            outputs=outputs,
+        )
     app.load(
         search_for_products,
-        inputs=[
-            search_input,
-            brands_cbg,
-            categories_cbg,
-            price_min_slider,
-            price_max_slider,
-            sort_by_input,
-            sort_order_input,
-        ],
-        outputs=[
-            results_data_frame,
-        ],
+        inputs=inputs,
+        outputs=outputs,
     )
 
 
