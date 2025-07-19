@@ -1,3 +1,4 @@
+from enum import StrEnum, auto
 from typing import Any
 
 import gradio as gr
@@ -13,6 +14,11 @@ known_langs: tuple[str, ...] = (
 
 
 MAX_PRICE = 2000
+
+
+class SortBy(StrEnum):
+    Ascending = auto()
+    Descending = auto()
 
 
 def handle_intro(
@@ -44,6 +50,8 @@ with gr.Blocks(
 
     with gr.Row():
         with gr.Column(1):
+            gr.Markdown("### 🔍 Search and filter")
+
             search_input = gr.Textbox(
                 label="Search for a product",
                 value="",
@@ -65,7 +73,16 @@ with gr.Blocks(
                 interactive=True,
             )
 
+            gr.Markdown("### 🔃 Sort Results")
+            sort_by_input = gr.Radio(
+                choices=list(SortBy),
+                value=SortBy.Ascending,
+                label="Sort by",
+                interactive=True,
+            )
+
         with gr.Column(3):
+            gr.Markdown("### ✨ Results")
             greeting_output = gr.Textbox(
                 label="Greeting",
                 value="",
