@@ -17,7 +17,8 @@ known_langs: tuple[str, ...] = (
 MAX_PRICE = 2000
 
 
-SortBy = list(asdict(products.PRODUCTS[0]))
+ColNames = list(asdict(products.PRODUCTS[0]))
+SortBy = ColNames
 
 
 class SortOrder(StrEnum):
@@ -53,7 +54,7 @@ with gr.Blocks(
     )
 
     with gr.Row():
-        with gr.Column(1):
+        with gr.Column(scale=1):
             gr.Markdown("### 🔍 Search and filter")
 
             search_input = gr.Textbox(
@@ -101,23 +102,15 @@ with gr.Blocks(
                 interactive=True,
             )
 
-        with gr.Column(3):
+        with gr.Column(scale=3):
             gr.Markdown("### ✨ Results")
-            greeting_output = gr.Textbox(
-                label="Greeting",
-                value="",
-                interactive=False,
-            )
-            cbg = gr.CheckboxGroup(
-                choices=[lang for lang in known_langs],
-                interactive=False,
-            )
 
-    # btn.click(
-    #     fn=handle_intro,
-    #     inputs=[intro_input],
-    #     outputs=[greeting_output, cbg],
-    # )
+            results_data_frame = gr.DataFrame(
+                headers=ColNames,
+                datatype="auto",
+                row_count=2,
+                col_count=(len(ColNames), "fixed"),
+            )
 
 
 def main():
