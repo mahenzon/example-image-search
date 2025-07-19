@@ -276,3 +276,8 @@ BRANDS = frozenset(product.brand for product in PRODUCTS)
 CATEGORIES = frozenset(
     cat.strip() for product in PRODUCTS for cat in product.category.split(",")
 )
+
+MIN_PRICE = min(product.price for product in PRODUCTS)
+MIN_PRICE = MIN_PRICE // 10 * 10
+MAX_PRICE = max(product.price for product in PRODUCTS)
+MAX_PRICE = (MAX_PRICE + 9) // 10 * 10

@@ -1,9 +1,10 @@
-from dataclasses import asdict, astuple, dataclass
+from dataclasses import asdict, astuple
 from enum import StrEnum, auto
-from typing import Any
 
 import gradio as gr
+
 import products
+from utils import SortValueGetter
 
 known_langs: tuple[str, ...] = (
     "JS",
@@ -13,10 +14,6 @@ known_langs: tuple[str, ...] = (
     "Kotlin",
 )
 
-
-MAX_PRICE = 2000
-
-
 ColNames = list(asdict(products.PRODUCTS[0]))
 SortBy = ColNames
 
@@ -24,17 +21,6 @@ SortBy = ColNames
 class SortOrder(StrEnum):
     Ascending = auto()
     Descending = auto()
-
-
-@dataclass
-class SortValueGetter:
-    attr_name: str
-
-    def get_value(self, item: Any) -> Any:
-        value = getattr(item, self.attr_name)
-        if isinstance(value, str):
-            value = value.lower()
-        return value
 
 
 def search_for_products(
@@ -46,7 +32,12 @@ def search_for_products(
     sort_by: str,
     sort_order: str,
 ):
-    result_products = list(products.PRODUCTS)
+    result_products = []
+    for product in products.PRODUCTS:
+        if product.price > price_max or product.price < price_min:
+            continue
+        result_products.append(product)
+
     result_products.sort(
         key=SortValueGetter(sort_by).get_value,
         reverse=sort_order == SortOrder.Descending,
@@ -54,24 +45,6 @@ def search_for_products(
     result_data = [astuple(product) for product in result_products]
 
     return result_data
-
-
-def handle_intro(
-    name: str = "",
-) -> tuple[str, dict[str, Any] | None]:
-    name = name.strip()
-    if not name:
-        name = "World"
-
-    greeting_out = f"Hello, {name}!"
-    found_langs = list(
-        {lang for lang in known_langs} & set(name.replace(",", " ").split())
-    )
-    cbg_out = gr.update(
-        label=f"New result includes {len(found_langs)} langs:",
-        value=found_langs,
-    )
-    return greeting_out, cbg_out
 
 
 with gr.Blocks(
@@ -103,17 +76,17 @@ with gr.Blocks(
 
             price_min_slider = gr.Slider(
                 label="Price from ($)",
-                minimum=0,
-                maximum=MAX_PRICE,
-                value=0,
+                minimum=products.MIN_PRICE,
+                maximum=products.MAX_PRICE,
+                value=products.MIN_PRICE,
                 step=10,
                 interactive=True,
             )
             price_max_slider = gr.Slider(
                 label="Price to ($)",
-                minimum=0,
-                maximum=MAX_PRICE,
-                value=MAX_PRICE,
+                minimum=products.MIN_PRICE,
+                maximum=products.MAX_PRICE,
+                value=products.MAX_PRICE,
                 step=10,
                 interactive=True,
             )
