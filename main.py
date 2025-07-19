@@ -1,5 +1,6 @@
-from dataclasses import asdict
+from dataclasses import asdict, astuple
 from enum import StrEnum, auto
+from operator import attrgetter
 from typing import Any
 
 import gradio as gr
@@ -24,6 +25,25 @@ SortBy = ColNames
 class SortOrder(StrEnum):
     Ascending = auto()
     Descending = auto()
+
+
+def search_for_products(
+    search_text: str,
+    brands_names: list[str],
+    categories: list[str],
+    price_min: int,
+    price_max: int,
+    sort_by: str,
+    sort_order: str,
+):
+    result_products = list(products.PRODUCTS)
+    result_products.sort(
+        key=attrgetter(sort_by),
+        reverse=sort_order == SortOrder.Descending,
+    )
+    result_data = [astuple(product) for product in result_products]
+
+    return result_data
 
 
 def handle_intro(
@@ -111,6 +131,22 @@ with gr.Blocks(
                 row_count=2,
                 col_count=(len(ColNames), "fixed"),
             )
+
+    app.load(
+        search_for_products,
+        inputs=[
+            search_input,
+            brands_cbg,
+            categories_cbg,
+            price_min_slider,
+            price_max_slider,
+            sort_by_input,
+            sort_order_input,
+        ],
+        outputs=[
+            results_data_frame,
+        ],
+    )
 
 
 def main():
