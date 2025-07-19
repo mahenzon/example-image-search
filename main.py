@@ -32,10 +32,28 @@ def search_for_products(
     sort_by: str,
     sort_order: str,
 ):
+    search_text = search_text.lower()
+    cats = set(categories)
+    brands = set(brands_names)
     result_products = []
     for product in products.PRODUCTS:
         if product.price > price_max or product.price < price_min:
             continue
+        if cats:
+            if not cats & product.categories:
+                continue
+        if brands:
+            if product.brand not in brands:
+                continue
+
+        if search_text:
+            if not (
+                search_text in product.name.lower()
+                or search_text in product.category.lower()
+                or search_text in product.brand.lower()
+            ):
+                continue
+
         result_products.append(product)
 
     result_products.sort(

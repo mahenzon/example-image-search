@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cached_property
 
 
 @dataclass
@@ -8,6 +9,10 @@ class Product:
     brand: str
     category: str
     rating: int
+
+    @cached_property
+    def categories(self) -> set[str]:
+        return {cat.strip() for cat in self.category.split(",")}
 
 
 PRODUCTS = (
