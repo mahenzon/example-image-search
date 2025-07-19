@@ -30,26 +30,35 @@ def handle_intro(
     return greeting_out, cbg_out
 
 
-with gr.Blocks() as app:
-    gr.Markdown("# Example Gradio App")
+with gr.Blocks(
+    title="Search App",
+    theme=gr.themes.Soft(),
+) as app:
+    gr.Markdown("# 🛍️ Products Search App")
+    gr.Markdown(
+        "Search for products using native Python code.",
+    )
 
-    intro_input = gr.Textbox(
-        label="Introduce yourself",
-        value="",
-    )
-    btn = gr.Button(
-        "Greet",
-        variant="primary",
-    )
-    greeting_output = gr.Textbox(
-        label="Greeting",
-        value="",
-        interactive=False,
-    )
-    cbg = gr.CheckboxGroup(
-        choices=[lang for lang in known_langs],
-        interactive=False,
-    )
+    with gr.Row():
+        with gr.Column(2):
+            intro_input = gr.Textbox(
+                label="Introduce yourself",
+                value="",
+            )
+            btn = gr.Button(
+                "Greet",
+                variant="primary",
+            )
+        with gr.Column(1):
+            greeting_output = gr.Textbox(
+                label="Greeting",
+                value="",
+                interactive=False,
+            )
+            cbg = gr.CheckboxGroup(
+                choices=[lang for lang in known_langs],
+                interactive=False,
+            )
 
     btn.click(
         fn=handle_intro,
