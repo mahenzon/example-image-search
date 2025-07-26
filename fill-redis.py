@@ -29,7 +29,7 @@ INDEX_SCHEMA: Final = [
     TextField("id"),
     TextField("name", sortable=True),
     NumericField("price", sortable=True),
-    TextField("brand", sortable=True),
+    TagField("brand", sortable=True),
     TagField("category", sortable=True),
     NumericField("rating", sortable=True),
 ]
@@ -42,8 +42,12 @@ INDEX_DEFINITION = IndexDefinition(
 
 def create_index(
     redis: Redis,
+    drop: bool = False,
 ):
     log.info("Creating redis index %r", REDIS_PRODUCTS_INDEX)
+
+    if drop:
+        redis.ft(REDIS_PRODUCTS_INDEX).dropindex()
 
     try:
         result = redis.ft(REDIS_PRODUCTS_INDEX).create_index(
@@ -81,7 +85,10 @@ def main():
         db=REDIS_PRODUCTS_DB,
         decode_responses=True,
     )
-    create_index(redis)
+    create_index(
+        redis,
+        # drop=True,
+    )
 
     products = generate_products(count=1000)
     fill_database(
