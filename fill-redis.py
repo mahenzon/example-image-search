@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 INDEX_SCHEMA: Final = [
     TextField("id"),
-    TextField("name", sortable=True),
+    TextField("name", weight=5.0, sortable=True),
     NumericField("price", sortable=True),
     TagField("brand", sortable=True),
     TagField("category", sortable=True),
