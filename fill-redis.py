@@ -1,4 +1,3 @@
-import json
 import logging
 from collections.abc import Sequence
 from dataclasses import asdict
@@ -6,11 +5,11 @@ from dataclasses import asdict
 from redis import Redis
 
 from config import (
-    REDIS_PRODUCTS_HASH_NAME,
     REDIS_PRODUCTS_DB,
     LOG_FORMAT,
     DATE_FORMAT,
     REDIS_PRODUCTS_KEY_PREFIX,
+    REDIS_PRODUCTS_INDEX,
 )
 from product import Product
 from products_data import generate_products
@@ -25,15 +24,13 @@ def fill_database(
 ):
     log.info("Adding %d products", len(products))
 
-    # redis.delete(REDIS_PRODUCTS_HASH_NAME)
     pipe = redis.pipeline()
     for product in products:
         mapping = asdict(product)
-        key = f"{REDIS_PRODUCTS_KEY_PREFIX}{product.id}"
+        name = f"{REDIS_PRODUCTS_KEY_PREFIX}{product.id}"
         pipe.hset(
-            name=REDIS_PRODUCTS_HASH_NAME,
-            key=key,
-            value=json.dumps(mapping),
+            name=name,
+            mapping=mapping,
         )
 
     pipe.execute()
