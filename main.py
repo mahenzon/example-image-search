@@ -17,6 +17,9 @@ known_langs: tuple[str, ...] = (
 ColNames = list(asdict(products.PRODUCTS[0]))
 SortBy = ColNames
 
+brands_cbg_val = tuple(products.BRANDS)
+categories_cbg_val = tuple(products.CATEGORIES)
+
 
 class SortOrder(StrEnum):
     Ascending = auto()
@@ -84,11 +87,12 @@ with gr.Blocks(
             )
 
             brands_cbg = gr.CheckboxGroup(
-                choices=products.BRANDS,
+                choices=brands_cbg_val,
                 label="Brands",
             )
+
             categories_cbg = gr.CheckboxGroup(
-                choices=products.CATEGORIES,
+                choices=categories_cbg_val,
                 label="Categories",
             )
 
@@ -151,11 +155,6 @@ with gr.Blocks(
             inputs=inputs,
             outputs=outputs,
         )
-    app.load(
-        search_for_products,
-        inputs=inputs,
-        outputs=outputs,
-    )
 
 
 def main():
