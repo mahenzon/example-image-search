@@ -10,6 +10,7 @@ from config import (
     REDIS_PRODUCTS_DB,
     LOG_FORMAT,
     DATE_FORMAT,
+    REDIS_PRODUCTS_KEY_PREFIX,
 )
 from product import Product
 from products_data import generate_products
@@ -24,12 +25,14 @@ def fill_database(
 ):
     log.info("Adding %d products", len(products))
 
+    # redis.delete(REDIS_PRODUCTS_HASH_NAME)
     pipe = redis.pipeline()
     for product in products:
         mapping = asdict(product)
+        key = f"{REDIS_PRODUCTS_KEY_PREFIX}{product.id}"
         pipe.hset(
             name=REDIS_PRODUCTS_HASH_NAME,
-            key=product.id,
+            key=key,
             value=json.dumps(mapping),
         )
 
