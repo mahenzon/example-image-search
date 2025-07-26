@@ -1,5 +1,5 @@
-from dataclasses import astuple
 from enum import StrEnum, auto
+from operator import attrgetter
 
 import gradio as gr
 from redis import Redis
@@ -10,7 +10,7 @@ from config import (
     REDIS_PRODUCTS_INDEX,
 )
 from product import Product
-from utils import SortValueGetter
+
 
 known_langs: tuple[str, ...] = (
     "JS",
@@ -53,6 +53,8 @@ ColNames = list(Product.__dataclass_fields__)
 if "id" in ColNames:
     ColNames.remove("id")
 
+get_col_values = attrgetter(*ColNames)
+
 SortBy = ColNames
 
 brands_cbg_val = tuple(get_redis_tag_values("brand"))
@@ -77,32 +79,40 @@ def search_for_products(
     cats = set(categories)
     brands = set(brands_names)
     result_products = []
-    for product in products.PRODUCTS:
-        if product.price > price_max or product.price < price_min:
-            continue
-        if cats:
-            if not cats & product.categories:
-                continue
-        if brands:
-            if product.brand not in brands:
-                continue
+    # if product.price > price_max or product.price < price_min:
+    #     continue
+    # if cats:
+    #     if not cats & product.categories:
+    #         continue
+    # if brands:
+    #     if product.brand not in brands:
+    #         continue
 
-        if search_text:
-            if not (
-                search_text in product.name.lower()
-                or search_text in product.category.lower()
-                or search_text in product.brand.lower()
-            ):
-                continue
+    # if search_text:
+    #     if not (
+    #         search_text in product.name.lower()
+    #         or search_text in product.category.lower()
+    #         or search_text in product.brand.lower()
+    #     ):
 
-        result_products.append(product)
+    query_parts = []
 
-    result_products.sort(
-        key=SortValueGetter(sort_by).get_value,
-        reverse=sort_order == SortOrder.Descending,
+    query_parts.append(f"@price:[{price_min} {price_max}]")
+    if query_parts:
+        query_text = " ".join(query_parts)
+    else:
+        query_text = "*"
+    result = redis.ft(REDIS_PRODUCTS_INDEX).search(
+        Query(query_text)
+        .sort_by(
+            sort_by,
+            asc=sort_order == SortOrder.Ascending,
+        )
+        .return_fields(*ColNames)
+        .paging(0, 50),
     )
-    result_data = [astuple(product) for product in result_products]
 
+    result_data = [get_col_values(product) for product in result.docs]
     return result_data
 
 
