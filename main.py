@@ -1,9 +1,14 @@
-from dataclasses import asdict, astuple
+from dataclasses import astuple
 from enum import StrEnum, auto
 
 import gradio as gr
+from redis import Redis
 
-import products
+from config import (
+    REDIS_PRODUCTS_DB,
+    REDIS_PRODUCTS_INDEX,
+)
+from product import Product
 from utils import SortValueGetter
 
 known_langs: tuple[str, ...] = (
@@ -14,11 +19,25 @@ known_langs: tuple[str, ...] = (
     "Kotlin",
 )
 
-ColNames = list(asdict(products.PRODUCTS[0]))
+redis = Redis(
+    db=REDIS_PRODUCTS_DB,
+    decode_responses=True,
+)
+
+
+def get_redis_tag_values(field_name: str) -> list[str]:
+    tag_vals = redis.ft(REDIS_PRODUCTS_INDEX).tagvals(field_name)
+    return sorted(tag_vals)
+
+
+ColNames = list(Product.__dataclass_fields__)
+if "id" in ColNames:
+    ColNames.remove("id")
+
 SortBy = ColNames
 
-brands_cbg_val = tuple(products.BRANDS)
-categories_cbg_val = tuple(products.CATEGORIES)
+brands_cbg_val = tuple(get_redis_tag_values("brand"))
+categories_cbg_val = tuple(get_redis_tag_values("category"))
 
 
 class SortOrder(StrEnum):
