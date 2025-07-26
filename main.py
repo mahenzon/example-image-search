@@ -1,3 +1,4 @@
+import re
 from enum import StrEnum, auto
 from operator import attrgetter
 
@@ -66,6 +67,14 @@ class SortOrder(StrEnum):
     Descending = auto()
 
 
+redis_search_escape_regex = re.compile(r'([!"$%&\'()*+,-./:;<=>?@[\\```^`{|}~])')
+
+
+def escape_string(value: str) -> str:
+    """Escapes special characters for a RediSearch query."""
+    return redis_search_escape_regex.sub(r"\\\1", value)
+
+
 def search_for_products(
     search_text: str,
     brands_names: list[str],
@@ -79,23 +88,17 @@ def search_for_products(
     cats = set(categories)
     brands = set(brands_names)
     result_products = []
-    # if product.price > price_max or product.price < price_min:
-    #     continue
-    # if cats:
-    #     if not cats & product.categories:
-    #         continue
-    # if brands:
-    #     if product.brand not in brands:
-    #         continue
-
-    # if search_text:
-    #     if not (
-    #         search_text in product.name.lower()
-    #         or search_text in product.category.lower()
-    #         or search_text in product.brand.lower()
-    #     ):
 
     query_parts = []
+    # 1. Handle free text search (now supports spaces)
+    # We split the search text into words and create a sub-query for each word.
+    # This ensures documents must contain all words (or similar ones via fuzzy search).
+    if search_text.strip():
+        # Escape special characters in each word to prevent query injection/errors
+        words = [escape_string(word) for word in search_text.strip().split()]
+        # Create a fuzzy (%%) and prefix (*) search for each word
+        text_query = " ".join([f"(@name:(%%{word}%%|{word}*))" for word in words])
+        query_parts.append(text_query)
 
     query_parts.append(f"@price:[{price_min} {price_max}]")
     if query_parts:
