@@ -100,6 +100,20 @@ def search_for_products(
         text_query = " ".join([f"(@name:(%%{word}%%|{word}*))" for word in words])
         query_parts.append(text_query)
 
+    # 2. Handle tag-based filtering for brands
+    if brands_names:
+        # Escape each brand name and join with '|' for an OR condition
+        escaped_brands = [escape_string(b) for b in brands_names]
+        brand_query = f"@brand:{{ {' | '.join(escaped_brands)} }}"
+        query_parts.append(brand_query)
+
+    # 3. Handle tag-based filtering for categories
+    if categories:
+        # Escape each category name and join with '|' for an OR condition
+        escaped_categories = [escape_string(c) for c in categories]
+        category_query = f"@category:{{ {' | '.join(escaped_categories)} }}"
+        query_parts.append(category_query)
+
     query_parts.append(f"@price:[{price_min} {price_max}]")
     if query_parts:
         query_text = " ".join(query_parts)
