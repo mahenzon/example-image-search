@@ -3,6 +3,7 @@ from enum import StrEnum, auto
 
 import gradio as gr
 from redis import Redis
+from redis.commands.search.query import Query
 
 from config import (
     REDIS_PRODUCTS_DB,
@@ -29,6 +30,24 @@ def get_redis_tag_values(field_name: str) -> list[str]:
     tag_vals = redis.ft(REDIS_PRODUCTS_INDEX).tagvals(field_name)
     return sorted(tag_vals)
 
+
+def get_price_limit(sort_asc: bool = True):
+    query_text = "*"
+    result = redis.ft(REDIS_PRODUCTS_INDEX).search(
+        Query(query_text)
+        .sort_by(
+            "price",
+            asc=sort_asc,
+        )
+        .paging(0, 1),
+    )
+    return int(result.docs[0].price)
+
+
+MIN_PRICE = get_price_limit(sort_asc=True)
+MIN_PRICE = MIN_PRICE // 10 * 10
+MAX_PRICE = get_price_limit(sort_asc=False)
+MAX_PRICE = (MAX_PRICE + 9) // 10 * 10
 
 ColNames = list(Product.__dataclass_fields__)
 if "id" in ColNames:
@@ -117,17 +136,17 @@ with gr.Blocks(
 
             price_min_slider = gr.Slider(
                 label="Price from ($)",
-                minimum=products.MIN_PRICE,
-                maximum=products.MAX_PRICE,
-                value=products.MIN_PRICE,
+                minimum=MIN_PRICE,
+                maximum=MAX_PRICE,
+                value=MIN_PRICE,
                 step=10,
                 interactive=True,
             )
             price_max_slider = gr.Slider(
                 label="Price to ($)",
-                minimum=products.MIN_PRICE,
-                maximum=products.MAX_PRICE,
-                value=products.MAX_PRICE,
+                minimum=MIN_PRICE,
+                maximum=MAX_PRICE,
+                value=MAX_PRICE,
                 step=10,
                 interactive=True,
             )
